@@ -1,0 +1,55 @@
+import csv
+import re
+#import win32com.client
+
+# Regular expression to match a 10-digit number
+pattern = re.compile(r'\b\d{10}\b')
+
+# Set to store unique 8-digit numbers
+seen_numbers = set()
+
+
+# Connect to Outlook
+#outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
+
+# Access the Inbox (folder index 6 is usually the Inbox)
+#inbox = outlook.GetDefaultFolder(6)
+#messages = inbox.Items
+#messages.Sort("[ReceivedTime]", True)  # Sort by most recent
+
+# Filter emails by subject
+#target_subject = "SmarTone New HIO PO Stock-in IMEI Prefix"
+
+try:
+    with open('Stockinventory.csv', 'r', newline='', encoding='utf-8', errors='ignore') as csvfile:
+        #spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+        spamreader = csv.reader(csvfile)
+        
+        for row in spamreader:
+
+            if row:
+                cell=row[0]
+                cell = cell.replace ("\ufeff"," ",1)
+                match = pattern.search(cell)
+
+            if match:
+                ten_digit_number = match.group()
+                first_8_digits = ten_digit_number[:8]
+
+            # Only print if not seen before
+            if first_8_digits not in seen_numbers:
+                #print("8-digit IMEI:", first_8_digits)
+                seen_numbers.add(first_8_digits)
+
+            # Split by space and extract content after third space
+                parts = cell.split()
+                #print(parts)
+                if len(parts) > 3:
+                    content_after_third_space = ' '.join(parts[2:])
+                    ten_char_segment = content_after_third_space[:]
+                    #print("Model Name:", ten_char_segment)
+
+                print("8-digit IMEI:", first_8_digits, "Model Name:", ten_char_segment)
+
+except UnicodeDecodeError:
+        print("Error decoding with UTF-8. Trying a different encoding...")
