@@ -1,55 +1,51 @@
 import csv
 import re
-#import win32com.client
 
-# Regular expression to match a 10-digit number
+# Regex to match a 10-digit number
 pattern = re.compile(r'\b\d{10}\b')
 
-# Set to store unique 8-digit numbers
+# Track unique 8-digit prefixes
 seen_numbers = set()
 
-
-# Connect to Outlook
-#outlook = win32com.client.Dispatch("Outlook.Application").GetNamespace("MAPI")
-
-# Access the Inbox (folder index 6 is usually the Inbox)
-#inbox = outlook.GetDefaultFolder(6)
-#messages = inbox.Items
-#messages.Sort("[ReceivedTime]", True)  # Sort by most recent
-
-# Filter emails by subject
-#target_subject = "SmarTone New HIO PO Stock-in IMEI Prefix"
+# Store results for later use
+results = []
 
 try:
     with open('Stockinventory.csv', 'r', newline='', encoding='utf-8', errors='ignore') as csvfile:
-        #spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-        spamreader = csv.reader(csvfile)
-        
-        for row in spamreader:
+        reader = csv.reader(csvfile)
 
-            if row:
-                cell=row[0]
-                cell = cell.replace ("\ufeff"," ",1)
-                match = pattern.search(cell)
+        for row in reader:
+            if not row:
+                continue
 
-            if match:
-                ten_digit_number = match.group()
-                first_8_digits = ten_digit_number[:8]
+            cell = row[0].replace("\ufeff", " ", 1)
+            match = pattern.search(cell)
 
-            # Only print if not seen before
-            if first_8_digits not in seen_numbers:
-                #print("8-digit IMEI:", first_8_digits)
-                seen_numbers.add(first_8_digits)
+            if not match:
+                continue
 
-            # Split by space and extract content after third space
-                parts = cell.split()
-                #print(parts)
-                if len(parts) > 3:
-                    content_after_third_space = ' '.join(parts[2:])
-                    ten_char_segment = content_after_third_space[:]
-                    #print("Model Name:", ten_char_segment)
+            ten_digit_number = match.group()
+            # Strip whitespace from the 8-digit prefix
+            first_8_digits = ten_digit_number[:8].strip()
 
-                print("8-digit IMEI:", first_8_digits, "Model Name:", ten_char_segment)
+            if first_8_digits in seen_numbers:
+                continue
+
+            seen_numbers.add(first_8_digits)
+
+            parts = cell.split()
+            model_name = ' '.join(parts[2:]).strip() if len(parts) > 3 else "Unknown"
+
+            results.append((first_8_digits, model_name))
+            print(f"8-digit IMEI: {first_8_digits} | Model Name: {model_name}")
 
 except UnicodeDecodeError:
-        print("Error decoding with UTF-8. Trying a different encoding...")
+    print("Error decoding with UTF-8. Try opening with a different encoding (e.g., latin-1).")
+
+# Optional: Save results to a new CSV file
+if results:
+    with open('FilteredOutput.csv', 'w', newline='', encoding='utf-8') as outfile:
+        writer = csv.writer(outfile)
+        writer.writerow(["IMEI Prefix", "Model Name"])
+        writer.writerows(results)
+    print("\nResults saved to FilteredOutput.csv")
