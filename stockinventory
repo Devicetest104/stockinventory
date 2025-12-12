@@ -26,7 +26,7 @@ try:
 
             ten_digit_number = match.group()
             # Strip whitespace from the 8-digit prefix
-            first_8_digits = ten_digit_number[:7].strip()
+            first_8_digits = ten_digit_number[:8].strip()
 
             if first_8_digits in seen_numbers:
                 continue
