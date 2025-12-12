@@ -37,7 +37,7 @@ try:
             model_name = ' '.join(parts[2:]).strip() if len(parts) > 3 else "Unknown"
 
             results.append((first_8_digits, model_name))
-            print(f"8-digit IMEI: {first_8_digits}&#124 Model Name: {model_name}")
+            print(f"8-digit IMEI: {first_8_digits}| Model Name: {model_name}")
 
 except UnicodeDecodeError:
     print("Error decoding with UTF-8. Try opening with a different encoding (e.g., latin-1).")
